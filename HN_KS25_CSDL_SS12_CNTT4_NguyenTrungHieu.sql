@@ -1,6 +1,5 @@
 CREATE DATABASE StudentDB;
 USE StudentDB;
-
 -- 1. Bảng Khoa
 CREATE TABLE Department (
     DeptID VARCHAR(5) PRIMARY KEY,
@@ -49,19 +48,28 @@ INSERT INTO Student VALUES
 ('S00006','Do Hung','Male','2002-11-11','BA'),
 ('S00007','Nguyen Mai','Female','2003-07-07','ACC'),
 ('S00008','Tran Phuc','Male','2003-09-09','IT');
+INSERT INTO Course VALUES
+('C00001','Lập trình C',5),
+('BA102','Kinh tế vi mô',3),
+('ACC10','Thuế',4);
+INSERT INTO Enrollment VALUES
+('S00001','C00001',7.5),
+('S00002','C00001',8),
+('S00003','BA102',6),
+('S00004','ACC10',5),
+('S00005','C00001',4.8),
+('S00006','BA102',6.7),
+('S00007','ACC10',9),
+('S00008','C00001',7);
+
 -- 1
--- Tạo View ViewStudentBasic hiển thị: StudentID, FullName, và DeptName. Sau đó viết lệnh truy vấn toàn bộ dữ liệu từ View này.
 CREATE VIEW ViewStudentBasic AS
 SELECT StudentID,FullName,DeptName 
 FROM Student s
 JOIN Department d ON s.DeptID = d.DeptID;
 -- 2
--- Tạo một Regular Index tên là idxFullName cho cột FullName của bảng Student.
 CREATE INDEX idxFullName ON Student(FullName);
 
--- Viết Stored Procedure GetStudentsIT (không có tham số).
-	-- Chức năng: Hiển thị toàn bộ sinh viên thuộc khoa "Information Technology" trong bảng Student kết hợp với DeptName từ bảng Department.
-	-- Yêu cầu: Gọi procedure bằng lệnh CALL để kiểm tra.
 -- 3
 DELIMITER //
 CREATE procedure GetStudentsIT ()
@@ -75,14 +83,24 @@ END
 
 CALL GetStudentsIT();
 
--- a) Tạo View ViewStudentCountByDept hiển thị: DeptName, TotalStudents (số lượng sinh viên của mỗi khoa).
--- b) Từ View trên, viết truy vấn hiển thị khoa có nhiều sinh viên nhất.
 -- 4 
 CREATE VIEW ViewStudentCountByDept AS
 SELECT DeptName, COUNT(s.DeptID) as TotalStudents 
 FROM Department d
 JOIN Student s ON s.DeptID = d.DeptID
 group by DeptName
-order by TotalStudents  DESC
+order by TotalStudents DESC
 LIMIT 1;
+-- 5
+DELIMITER //
+CREATE procedure GetTopScoreStudent(IN varCourseID VARCHAR(6))
+BEGIN
+	SELECT StudentID,CourseID ,Score 
+    FROM Enrollment
+    WHERE CourseID = varCourseID
+    ORDER BY Score DESC
+    LIMIT 1;
+END 
+// DELIMITER ;
 
+CALL GetTopScoreStudent('C00001');
